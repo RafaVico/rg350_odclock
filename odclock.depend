@@ -1,0 +1,21 @@
+# depslib dependency file v1.0
+1577444298 source:/home/rafa/GitHub___/odclock/src/main.cpp
+	<sys/stat.h>
+	<math.h>
+	<time.h>
+	<string>
+	<fstream>
+	<SDL/SDL.h>
+	<SDL/SDL_image.h>
+	<SDL/SDL_ttf.h>
+	<SDL/SDL_mixer.h>
+	"../inc/font_pixelberry.h"
+	"../inc/font_atomicclockradio.h"
+	"../inc/bmp_icons.h"
+
+1577230168 /home/rafa/GitHub___/odclock/inc/font_pixelberry.h
+
+1577230194 /home/rafa/GitHub___/odclock/inc/font_atomicclockradio.h
+
+1577303104 /home/rafa/GitHub___/odclock/inc/bmp_icons.h
+
