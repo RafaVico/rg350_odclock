@@ -23,6 +23,8 @@
 #include "../inc/font_pixelberry.h"       // font are embedded in executable
 #include "../inc/font_atomicclockradio.h"
 #include "../inc/bmp_icons.h"
+#include "../inc/bmp_arrows.h"
+#include "../inc/bmp_buttons.h"
 
 ///////////////////////////////////
 /*  Joystick codes               */
@@ -109,6 +111,14 @@ struct settings
   int mon_first;      // is monday first day of the week?
 };
 
+struct editpos
+{
+  int x;
+  int y;
+  int x2;
+  int y2;
+};
+
 ///////////////////////////////////
 /*  Globals                      */
 ///////////////////////////////////
@@ -125,8 +135,14 @@ int mode_app=MODE_CLOCK;
 int edit_mode=FALSE;
 settings clock_settings;
 
+// edit values
+int editclock_index=0;
+editpos editclock_pos[7];
+
 // graphics
 SDL_Surface *img_icons[10];
+SDL_Surface *img_arrows[2];
+SDL_Surface *img_buttons[10];
 //sonidos
 Mix_Chunk *sound_tone;
 
@@ -135,10 +151,10 @@ Mix_Chunk *sound_tone;
 ///////////////////////////////////
 const char* msg[4]=
 {
-  "[START] exit",
-  "[SELECT] set time",
-  "[A] accept",
-  "[B] cancel"
+  " exit",
+  " set time",
+  " accept",
+  " cancel"
 };
 
 ///////////////////////////////////
@@ -426,19 +442,55 @@ void draw_actualtime(int x, int y)
   if(!clock_settings.format_24)
   {
     strftime(amtext,20,"%p",timeinfo);
-    draw_text(screen,font,amtext,x+120,y+40,128,128,0);
+    draw_text(screen,font,amtext,x+120,y+56,128,128,0);
   }
   else
-    draw_text(screen,font,(char*)"24h",x+120,y+40,30,30,30);
+    draw_text(screen,font,(char*)"24h",x+120,y+56,30,30,30);
 
   // seconds
   char sectext[20];
   strftime(sectext,20,":%S",timeinfo);
-  draw_text(screen,font,sectext,x+120,y+56,128,128,0);
+  draw_text(screen,font,sectext,x+120,y+40,128,128,0);
+}
+
+void set_clockeditarrows(int x, int y)
+{
+  // fixed positions of edit arrows
+  // hour
+  editclock_pos[0].x=x+30;
+  editclock_pos[0].y=y+35;
+  editclock_pos[0].x2=editclock_pos[0].x;
+  editclock_pos[0].y2=editclock_pos[0].y+25;
+  // minutes
+  editclock_pos[1].x=x+90;
+  editclock_pos[1].y=y+35;
+  editclock_pos[1].x2=editclock_pos[1].x;
+  editclock_pos[1].y2=editclock_pos[1].y+25;
+  // seconds
+  editclock_pos[2].x=x+122;
+  editclock_pos[2].y=y+35;
+  editclock_pos[2].x2=editclock_pos[2].x;
+  editclock_pos[2].y2=editclock_pos[2].y+10;
+  // am/pm
+  editclock_pos[3].x=x+122;
+  editclock_pos[3].y=y+51;
+  editclock_pos[3].x2=editclock_pos[3].x;
+  editclock_pos[3].y2=editclock_pos[3].y+10;
+}
+
+void uppertext(char* text)
+{
+  while(*text)
+  {
+    *text=toupper((unsigned char)*text);
+    text++;
+  }
 }
 
 void draw_edittime(int x, int y)
 {
+  set_clockeditarrows(x,y);
+
   // time
   char timetext[20];
   if(clock_settings.format_24)
@@ -453,35 +505,70 @@ void draw_edittime(int x, int y)
   }
 
   // date
+  int w1,w2,w3;
+  char* text;
   char datetext[80];
   char formatdate[20];
   formatdate[0]=0;
+  char tempwidth[20];
+  tempwidth[0]=0;
+
   if(clock_settings.date_ord1==0)
-    strcat(formatdate,"%d ");
-  else if(clock_settings.date_ord1==1)
-    strcat(formatdate,"%B ");
-  else if(clock_settings.date_ord1==2)
-    strcat(formatdate,"%Y ");
-  if(clock_settings.date_ord2==0)
-    strcat(formatdate,"%d ");
-  else if(clock_settings.date_ord2==1)
-    strcat(formatdate,"%B ");
-  else if(clock_settings.date_ord2==2)
-    strcat(formatdate,"%Y ");
-  if(clock_settings.date_ord3==0)
-    strcat(formatdate,"%d");
-  else if(clock_settings.date_ord3==1)
-    strcat(formatdate,"%B");
-  else if(clock_settings.date_ord3==2)
-    strcat(formatdate,"%Y");
-//strftime(datetext,80,"%d %B %Y",timeinfo);
-  strftime(datetext,80,formatdate,&edit_time);
-  char* text=datetext;
-  while(*text)
   {
-    *text=toupper((unsigned char)*text);
-    text++;
+    strcat(formatdate,"%d ");
+    strftime(tempwidth,20,"%d ",&edit_time);
   }
+  else if(clock_settings.date_ord1==1)
+  {
+    strcat(formatdate,"%B ");
+    strftime(tempwidth,20,"%B ",&edit_time);
+  }
+  else if(clock_settings.date_ord1==2)
+  {
+    strcat(formatdate,"%Y ");
+    strftime(tempwidth,20,"%Y ",&edit_time);
+  }
+  uppertext(tempwidth);
+  w1=text_width(tempwidth);
+
+  if(clock_settings.date_ord2==0)
+  {
+    strcat(formatdate,"%d ");
+    strftime(tempwidth,20,"%d ",&edit_time);
+  }
+  else if(clock_settings.date_ord2==1)
+  {
+    strcat(formatdate,"%B ");
+    strftime(tempwidth,20,"%B ",&edit_time);
+  }
+  else if(clock_settings.date_ord2==2)
+  {
+    strcat(formatdate,"%Y ");
+    strftime(tempwidth,20,"%Y ",&edit_time);
+  }
+  uppertext(tempwidth);
+  w2=text_width(tempwidth);
+
+  if(clock_settings.date_ord3==0)
+  {
+    strcat(formatdate,"%d");
+    strftime(tempwidth,20,"%d",&edit_time);
+  }
+  else if(clock_settings.date_ord3==1)
+  {
+    strcat(formatdate,"%B");
+    strftime(tempwidth,20,"%B",&edit_time);
+  }
+  else if(clock_settings.date_ord3==2)
+  {
+    strcat(formatdate,"%Y");
+    strftime(tempwidth,20,"%Y",&edit_time);
+  }
+  uppertext(tempwidth);
+  w3=text_width(tempwidth);
+
+  strftime(datetext,80,formatdate,&edit_time);
+  uppertext(datetext);
   int tw=text_width(datetext);
   draw_text(screen,font,datetext,x+(150-tw)/2,y+80,255,255,0);
 
@@ -490,15 +577,40 @@ void draw_edittime(int x, int y)
   if(!clock_settings.format_24)
   {
     strftime(amtext,20,"%p",&edit_time);
-    draw_text(screen,font,amtext,x+120,y+40,128,128,0);
+    draw_text(screen,font,amtext,x+120,y+56,128,128,0);
   }
   else
-    draw_text(screen,font,(char*)"24h",x+120,y+40,30,30,30);
+    draw_text(screen,font,(char*)"24h",x+120,y+56,30,30,30);
 
   // seconds
   char sectext[20];
   strftime(sectext,20,":%S",&edit_time);
-  draw_text(screen,font,sectext,x+120,y+56,128,128,0);
+  draw_text(screen,font,sectext,x+120,y+40,128,128,0);
+
+  // calculate date arrows position
+  editclock_pos[4].x=x+((150-tw)/2)+(w1/2)-5;
+  editclock_pos[4].y=y+75;
+  editclock_pos[4].x2=editclock_pos[4].x;
+  editclock_pos[4].y2=editclock_pos[4].y+10;
+  editclock_pos[5].x=x+((150-tw)/2)+w1+(w2/2)-5;
+  editclock_pos[5].y=y+75;
+  editclock_pos[5].x2=editclock_pos[5].x;
+  editclock_pos[5].y2=editclock_pos[5].y+10;
+  editclock_pos[6].x=x+((150-tw)/2)+w1+w2+(w3/2)-5;
+  editclock_pos[6].y=y+75;
+  editclock_pos[6].x2=editclock_pos[6].x;
+  editclock_pos[6].y2=editclock_pos[6].y+10;
+
+  // edition arrows
+  SDL_Rect dest;
+  dest.x=editclock_pos[editclock_index].x;
+  dest.y=editclock_pos[editclock_index].y;
+  if(img_arrows[0])
+    SDL_BlitSurface(img_arrows[0],NULL,screen,&dest);
+  dest.x=editclock_pos[editclock_index].x2;
+  dest.y=editclock_pos[editclock_index].y2;
+  if(img_arrows[1])
+    SDL_BlitSurface(img_arrows[1],NULL,screen,&dest);
 }
 
 ///////////////////////////////////
@@ -626,9 +738,10 @@ void init_game()
   // Graphics
   SDL_Rect rect;
   SDL_Surface* tmpsurface;
+  SDL_RWops *rw;
 
-  SDL_RWops *rw = SDL_RWFromMem(bmp_icons, bmp_icons_len);
-  tmpsurface=SDL_LoadBMP_RW(rw,1);
+  rw = SDL_RWFromMem(bmp_icons, bmp_icons_len);
+  tmpsurface=SDL_LoadBMP_RW(rw,TRUE);
   for(int f=0; f<10; f++)
   {
     rect.x=f*10;
@@ -638,6 +751,34 @@ void init_game()
     img_icons[f]=SDL_CreateRGBSurface(SDL_SRCCOLORKEY, rect.w, rect.h, 16, 0,0,0,0);
     SDL_BlitSurface(tmpsurface,&rect,img_icons[f],NULL);
     SDL_SetColorKey(img_icons[f],SDL_SRCCOLORKEY,SDL_MapRGB(screen->format,255,0,255));
+  }
+  SDL_FreeSurface(tmpsurface);
+
+  rw = SDL_RWFromMem(bmp_arrows, bmp_arrows_len);
+  tmpsurface=SDL_LoadBMP_RW(rw,TRUE);
+  for(int f=0; f<2; f++)
+  {
+    rect.x=f*10;
+    rect.y=0;
+    rect.w=10;
+    rect.h=10;
+    img_arrows[f]=SDL_CreateRGBSurface(SDL_SRCCOLORKEY, rect.w, rect.h, 16, 0,0,0,0);
+    SDL_BlitSurface(tmpsurface,&rect,img_arrows[f],NULL);
+    SDL_SetColorKey(img_arrows[f],SDL_SRCCOLORKEY,SDL_MapRGB(screen->format,255,0,255));
+  }
+  SDL_FreeSurface(tmpsurface);
+
+  rw = SDL_RWFromMem(bmp_buttons, bmp_buttons_len);
+  tmpsurface=SDL_LoadBMP_RW(rw,TRUE);
+  for(int f=0; f<10; f++)
+  {
+    rect.x=f*10;
+    rect.y=0;
+    rect.w=10;
+    rect.h=10;
+    img_buttons[f]=SDL_CreateRGBSurface(SDL_SRCCOLORKEY, rect.w, rect.h, 16, 0,0,0,0);
+    SDL_BlitSurface(tmpsurface,&rect,img_buttons[f],NULL);
+    SDL_SetColorKey(img_buttons[f],SDL_SRCCOLORKEY,SDL_MapRGB(screen->format,255,0,255));
   }
   SDL_FreeSurface(tmpsurface);
 
@@ -659,6 +800,9 @@ void end_game()
   for(int f=0; f<10; f++)
     if(img_icons[f])
       SDL_FreeSurface(img_icons[f]);
+  for(int f=0; f<2; f++)
+    if(img_arrows[f])
+      SDL_FreeSurface(img_arrows[f]);
 
   // Free sounds
   Mix_HaltChannel(-1);
@@ -932,19 +1076,35 @@ void process_joystick()
 ///////////////////////////////////
 void draw_mode_clock()
 {
+  SDL_Rect dest;
+
   if(!edit_mode)
   {
     draw_clock(85,50);
     draw_actualtime(85,50);
-    draw_text(screen,font,(char*)msg[1],100,230,255,255,255);
+
+    dest.x=85;
+    dest.y=230;
+    if(img_buttons[4])
+      SDL_BlitSurface(img_buttons[4],NULL,screen,&dest);
+    draw_text(screen,font,(char*)msg[1],95,230,255,255,255);
   }
   else
   {
     draw_clock(85,50);
     draw_edittime(85,50);
-    draw_text(screen,font,(char*)"Edit-MODE",0,200,255,255,0);
-    draw_text(screen,font,(char*)msg[2],100,230,255,255,255);
-    draw_text(screen,font,(char*)msg[3],110+text_width((char*)msg[2]),230,255,255,255);
+
+    dest.x=85;
+    dest.y=230;
+    if(img_buttons[6])
+      SDL_BlitSurface(img_buttons[6],NULL,screen,&dest);
+    draw_text(screen,font,(char*)msg[2],95,230,255,255,255);
+
+    dest.x=105+text_width((char*)msg[2]);
+    dest.y=230;
+    if(img_buttons[7])
+      SDL_BlitSurface(img_buttons[7],NULL,screen,&dest);
+    draw_text(screen,font,(char*)msg[3],115+text_width((char*)msg[2]),230,255,255,255);
   }
 }
 
@@ -953,15 +1113,42 @@ void draw_mode_clock()
 ///////////////////////////////////
 void update_mode_clock()
 {
-  if(mainjoystick.button_select)
+  if(!edit_mode)
   {
-    edit_mode=TRUE;
-    edit_time.tm_year=actual_time.tm_year;
-    edit_time.tm_mon=actual_time.tm_mon;
-    edit_time.tm_mday=actual_time.tm_mday;
-    edit_time.tm_hour=actual_time.tm_hour;
-    edit_time.tm_min=actual_time.tm_min;
-    edit_time.tm_sec=actual_time.tm_sec;
+    if(mainjoystick.button_select)
+    {
+      edit_mode=TRUE;
+      edit_time.tm_year=actual_time.tm_year;
+      edit_time.tm_mon=actual_time.tm_mon;
+      edit_time.tm_mday=actual_time.tm_mday;
+      edit_time.tm_hour=actual_time.tm_hour;
+      edit_time.tm_min=actual_time.tm_min;
+      edit_time.tm_sec=actual_time.tm_sec;
+    }
+  }
+  else
+  {
+    if(mainjoystick.button_b)
+      edit_mode=FALSE;
+    if(mainjoystick.button_a)
+    {
+      time_t t=mktime(&edit_time);
+      if(t!=(time_t)-1)
+        stime(&t);
+      edit_mode=FALSE;
+    }
+    if(mainjoystick.pad_right)
+    {
+      editclock_index++;
+      if(editclock_index>6)
+        editclock_index=0;
+    }
+    if(mainjoystick.pad_left)
+    {
+      editclock_index--;
+      if(editclock_index<0)
+        editclock_index=6;
+    }
   }
 }
 
@@ -970,6 +1157,20 @@ void update_mode_clock()
 ///////////////////////////////////
 void draw_mode_cal()
 {
+  char xx[2];
+  int x=0,y=0;
+  for(int f=32; f<255;f++)
+  {
+    xx[0]=f;
+    xx[1]=0;
+    draw_text(screen,font,xx,x,y,255,255,0);
+    x+=10;
+    if(x>200)
+    {
+      x=0;
+      y+=10;
+    }
+  }
 }
 
 ///////////////////////////////////
@@ -1032,11 +1233,6 @@ void update_menu()
     if(mode_app<MODE_CLOCK)
       mode_app=MODE_TIMER;
   }
-
-  if(mainjoystick.button_a)
-    clock_settings.format_24=TRUE;
-  if(mainjoystick.button_b)
-    clock_settings.format_24=FALSE;
 }
 
 ///////////////////////////////////
@@ -1051,13 +1247,13 @@ void draw_menu()
   SDL_Rect dest;
   dest.x=0;
   dest.y=230;
-  if(img_icons[0])
-    SDL_BlitSurface(img_icons[0],NULL,screen,&dest);
-  dest.x=50;
-  if(img_icons[1])
-    SDL_BlitSurface(img_icons[1],NULL,screen,&dest);
+  if(img_buttons[0])
+    SDL_BlitSurface(img_buttons[0],NULL,screen,&dest);
+  dest.x=60;
+  if(img_buttons[1])
+    SDL_BlitSurface(img_buttons[1],NULL,screen,&dest);
 
-  dest.x=10;
+  dest.x=15;
   for(int f=0; f<4; f++)
   {
     if(f==(mode_app-1))
@@ -1068,6 +1264,10 @@ void draw_menu()
   }
 
   // menu message
+  dest.x=310-text_width((char*)msg[0]);
+  dest.y=230;
+  if(img_buttons[5])
+    SDL_BlitSurface(img_buttons[5],NULL,screen,&dest);
   draw_text(screen,font,(char*)msg[0],320-text_width((char*)msg[0]),230,255,255,255);
 }
 

@@ -15,7 +15,7 @@
 		</MakeCommands>
 		<Build>
 			<Target title="GCWZero">
-				<Option output="odclock" prefix_auto="0" extension_auto="0" />
+				<Option output="clockod" prefix_auto="0" extension_auto="0" />
 				<Option object_output=".obj/gcwzero" />
 				<Option type="1" />
 				<Option compiler="gcwzero" />
@@ -34,6 +34,8 @@
 			<Add alias="All" targets="GCWZero;" />
 		</VirtualTargets>
 		<Unit filename="README.md" />
+		<Unit filename="inc/bmp_arrows.h" />
+		<Unit filename="inc/bmp_buttons.h" />
 		<Unit filename="inc/bmp_icons.h" />
 		<Unit filename="inc/font_atomicclockradio.h" />
 		<Unit filename="inc/font_pixelberry.h" />
