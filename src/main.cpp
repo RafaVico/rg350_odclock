@@ -138,6 +138,7 @@ tm edit_time;
 int mode_app=MODE_CLOCK;
 int edit_mode=FALSE;
 settings clock_settings;
+settings clock_previous;
 // edit values
 int editclock_index=0;
 editpos editclock_pos[7];
@@ -148,20 +149,28 @@ tm actual_calendar;
 // graphics
 SDL_Surface *img_icons[10];
 SDL_Surface *img_arrows[2];
-SDL_Surface *img_buttons[10];
+SDL_Surface *img_buttons[14];
 //sonidos
 Mix_Chunk *sound_tone;
 
 ///////////////////////////////////
 /*  Messages                     */
 ///////////////////////////////////
-const char* msg[5]=
+const char* msg[8]=
 {
   " exit",
   " set time",
   " accept",
   " cancel",
-  " move"
+  " move",
+  " month",
+  " year",
+  " begin"
+};
+
+const char* daysname[7]=
+{
+  "Sun","Mon","Tue","Wed","Thu","Fri","Sat"
 };
 
 ///////////////////////////////////
@@ -305,10 +314,10 @@ void draw_text(SDL_Surface* dst, TTF_Font* f, char* string, int x, int y, int fR
 ///////////////////////////////////
 /*  Return text width             */
 ///////////////////////////////////
-int text_width(char* string)
+int text_width(char* string,TTF_Font* f=font)
 {
   int nx=0,ny=0;
-  TTF_SizeText(font,string,&nx,&ny);
+  TTF_SizeText(f,string,&nx,&ny);
 
   return nx;
 }
@@ -783,7 +792,7 @@ void init_game()
 
   rw = SDL_RWFromMem(bmp_buttons, bmp_buttons_len);
   tmpsurface=SDL_LoadBMP_RW(rw,TRUE);
-  for(int f=0; f<10; f++)
+  for(int f=0; f<14; f++)
   {
     rect.x=f*10;
     rect.y=0;
@@ -1151,13 +1160,20 @@ void update_mode_clock()
       edit_time.tm_hour=actual_time.tm_hour;
       edit_time.tm_min=actual_time.tm_min;
       edit_time.tm_sec=actual_time.tm_sec;
+
+      clock_previous=clock_settings;
     }
   }
   else
   {
     // actions in edit mode
     if(mainjoystick.button_b)
+    {
       edit_mode=FALSE;
+      clock_settings.date_ord1=clock_previous.date_ord1;
+      clock_settings.date_ord2=clock_previous.date_ord2;
+      clock_settings.date_ord3=clock_previous.date_ord3;
+    }
     if(mainjoystick.button_a)
     {
       time_t t=mktime(&edit_time);
@@ -1350,11 +1366,7 @@ void draw_mode_cal()
   bor.r=55;
   bor.g=37;
   bor.b=56;
-
-  /*SDL_Rect dest;
-  dest.x=48;
-  dest.y=48;*/
-  draw_rectangle(48,24,224,168,&col,BORDER_SINGLE,&bor);
+  //draw_rectangle(48,24,224,168,&col,BORDER_SINGLE,&bor);
 
   int inmonth;
   if(tmptime.tm_mday==1)
@@ -1362,18 +1374,42 @@ void draw_mode_cal()
   else
     inmonth=0;
   int x=48, y=24, tday=0;
-  while(inmonth!=2 || (inmonth==2 && x!=48))
+
+  // print days name
+  int fday;
+  if(clock_settings.mon_first)
+    fday=1;
+  else
+    fday=0;
+  for(int f=0; f<7; f++)
   {
     SDL_Color ccc;
+    ccc.r=55;
+    ccc.g=37;
+    ccc.b=56;
+    draw_rectangle(x+(32*f),y,32,11,&ccc);
+    if((clock_settings.mon_first && f==6) || (!clock_settings.mon_first && f==0))
+      draw_text(screen,font,(char*)daysname[fday],x+(32*f)+16-text_width((char*)daysname[fday])/2,y+1,225,65,65);
+    else
+      draw_text(screen,font,(char*)daysname[fday],x+(32*f)+16-text_width((char*)daysname[fday])/2,y+1,120,132,171);
+    fday++;
+    if(fday>6)
+      fday=0;
+  }
+
+  y=y+11;
+  // print days
+  while(inmonth!=2 || (inmonth==2 && x!=48))
+  {
+    /*SDL_Color ccc;
     ccc.r=64;
     ccc.g=64;
-    ccc.b=64;
-    if(tmptime.tm_mday%2==0)
-      draw_rectangle(x,y,32,24,&ccc);
+    ccc.b=64;*/
+    draw_rectangle(x,y,32,28,&col);
 
     char num[20];
     sprintf(num,"%d",tmptime.tm_mday);
-    int tx=x+16-text_width(num);
+    int tx=x+16-text_width(num,font3)/2;
     int ty=y+5;
 
     if(inmonth==1)
@@ -1407,6 +1443,29 @@ void draw_mode_cal()
   uppertext(monthtext);
   draw_text(screen,font,monthtext,160-text_width(monthtext)/2,14,255,255,0);
 
+  // buttons
+  SDL_Rect dest;
+  dest.y=230;
+  dest.x=105;//+text_width((char*)msg[2])+20+text_width((char*)msg[2]);
+  if(img_buttons[10])
+    SDL_BlitSurface(img_buttons[10],NULL,screen,&dest);
+  dest.x+=10;
+  if(img_buttons[11])
+    SDL_BlitSurface(img_buttons[11],NULL,screen,&dest);
+  draw_text(screen,font,(char*)msg[5],dest.x+10,229,255,255,255);
+  dest.x=dest.x+10+text_width((char*)msg[5])+10;
+
+  if(img_buttons[12])
+    SDL_BlitSurface(img_buttons[12],NULL,screen,&dest);
+  dest.x+=10;
+  if(img_buttons[13])
+    SDL_BlitSurface(img_buttons[13],NULL,screen,&dest);
+  draw_text(screen,font,(char*)msg[6],dest.x+10,229,255,255,255);
+  dest.x=dest.x+10+text_width((char*)msg[6])+10;
+
+  if(img_buttons[9])
+    SDL_BlitSurface(img_buttons[9],NULL,screen,&dest);
+  draw_text(screen,font,(char*)msg[7],dest.x+10,229,255,255,255);
 }
 
 ///////////////////////////////////
@@ -1414,6 +1473,40 @@ void draw_mode_cal()
 ///////////////////////////////////
 void update_mode_cal()
 {
+  if(mainjoystick.button_x)
+    clock_settings.mon_first=!clock_settings.mon_first;
+  if(mainjoystick.pad_left)
+  {
+    if(!(actual_calendar.tm_mon==0 && actual_calendar.tm_year==0))
+    {
+      actual_calendar.tm_mon--;
+      mktime(&actual_calendar);
+    }
+  }
+  if(mainjoystick.pad_right)
+  {
+    if(!(actual_calendar.tm_mon==11 && actual_calendar.tm_year==(2037-1900)))
+    {
+      actual_calendar.tm_mon++;
+      mktime(&actual_calendar);
+    }
+  }
+  if(mainjoystick.pad_down)
+  {
+    if(actual_calendar.tm_year>0)
+    {
+      actual_calendar.tm_year--;
+      mktime(&actual_calendar);
+    }
+  }
+  if(mainjoystick.pad_up)
+  {
+    if(actual_calendar.tm_year<(2037-1900))    // if bigger, program crash
+    {
+      actual_calendar.tm_year++;
+      mktime(&actual_calendar);
+    }
+  }
 }
 
 ///////////////////////////////////
