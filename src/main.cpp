@@ -1417,6 +1417,7 @@ void draw_mode_cal()
   tm tmptime;
   tmptime=actual_calendar;
   tmptime.tm_mday=1;
+  tmptime.tm_isdst=-1;
   mktime(&tmptime);
 
   if(clock_settings.mon_first && tmptime.tm_wday!=1)
@@ -1427,11 +1428,13 @@ void draw_mode_cal()
     else
       d--;
     tmptime.tm_mday-=d;   // begin from first day of the week (monday begin)
+    tmptime.tm_isdst=-1;
     mktime(&tmptime);
   }
   else if(!clock_settings.mon_first && tmptime.tm_wday!=0)
   {
     tmptime.tm_mday-=tmptime.tm_wday; // begin from first day of the week (sunday begins)
+    tmptime.tm_isdst=-1;
     mktime(&tmptime);
   }
 
@@ -1501,6 +1504,7 @@ void draw_mode_cal()
       draw_text(screen,font3,num,tx,ty,120,132,171);
 
     tmptime.tm_mday++;
+    tmptime.tm_isdst=-1;  // this avoid day jumps when reading lightsaving day
     mktime(&tmptime);
 
     if(tmptime.tm_mon==actual_calendar.tm_mon && inmonth==0)
