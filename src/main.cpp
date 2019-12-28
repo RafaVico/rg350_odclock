@@ -22,6 +22,7 @@
 
 #include "../inc/font_pixelberry.h"       // font are embedded in executable
 #include "../inc/font_atomicclockradio.h"
+#include "../inc/font_audiowide.h"
 #include "../inc/bmp_icons.h"
 #include "../inc/bmp_arrows.h"
 #include "../inc/bmp_buttons.h"
@@ -126,18 +127,23 @@ SDL_Surface* screen;   		    // screen to work
 int done=FALSE;
 TTF_Font* font;                 // used font
 TTF_Font* font2;                // used font
+TTF_Font* font3;                // used font
 SDL_Joystick* joystick;         // used joystick
 joystick_state mainjoystick;
 Uint8* keys=SDL_GetKeyState(NULL);
+
+// clock info
 tm actual_time;
 tm edit_time;
 int mode_app=MODE_CLOCK;
 int edit_mode=FALSE;
 settings clock_settings;
-
 // edit values
 int editclock_index=0;
 editpos editclock_pos[7];
+
+// calendar info
+tm actual_calendar;
 
 // graphics
 SDL_Surface *img_icons[10];
@@ -149,12 +155,13 @@ Mix_Chunk *sound_tone;
 ///////////////////////////////////
 /*  Messages                     */
 ///////////////////////////////////
-const char* msg[4]=
+const char* msg[5]=
 {
   " exit",
   " set time",
   " accept",
-  " cancel"
+  " cancel",
+  " move"
 };
 
 ///////////////////////////////////
@@ -717,10 +724,15 @@ void load_imgalpha(const char* file, SDL_Surface *&dstsurface)
 void init_game()
 {
   clock_settings.format_24=TRUE;
-  clock_settings.mon_first=FALSE;
+  clock_settings.mon_first=TRUE;
   clock_settings.date_ord1=0;
   clock_settings.date_ord2=1;
   clock_settings.date_ord3=2;
+
+  time_t now=time(0);
+  tm* timeinfo;
+  timeinfo=localtime(&now);
+  actual_calendar=*timeinfo;
 
   mode_app=MODE_CLOCK;
   // Initalizations
@@ -734,6 +746,7 @@ void init_game()
   TTF_Init();
   font=TTF_OpenFontRW(SDL_RWFromMem(font_pixelberry,font_pixelberry_len),1, 8);
   font2=TTF_OpenFontRW(SDL_RWFromMem(font_atomicclockradio,font_atomicclockradio_len),1, 28);
+  font3=TTF_OpenFontRW(SDL_RWFromMem(font_audiowide,font_audiowide_len),1, 18);
 
   // Graphics
   SDL_Rect rect;
@@ -1080,6 +1093,7 @@ void draw_mode_clock()
 
   if(!edit_mode)
   {
+    // buttons in normal mode
     draw_clock(85,50);
     draw_actualtime(85,50);
 
@@ -1091,6 +1105,7 @@ void draw_mode_clock()
   }
   else
   {
+    // buttons in edit mode
     draw_clock(85,50);
     draw_edittime(85,50);
 
@@ -1098,13 +1113,23 @@ void draw_mode_clock()
     dest.y=230;
     if(img_buttons[6])
       SDL_BlitSurface(img_buttons[6],NULL,screen,&dest);
-    draw_text(screen,font,(char*)msg[2],95,230,255,255,255);
+    draw_text(screen,font,(char*)msg[2],dest.x+10,230,255,255,255);
 
     dest.x=105+text_width((char*)msg[2]);
-    dest.y=230;
     if(img_buttons[7])
       SDL_BlitSurface(img_buttons[7],NULL,screen,&dest);
-    draw_text(screen,font,(char*)msg[3],115+text_width((char*)msg[2]),230,255,255,255);
+    draw_text(screen,font,(char*)msg[3],dest.x+10,230,255,255,255);
+
+    if(editclock_index>=4 && editclock_index<=6)
+    {
+      dest.x=105+text_width((char*)msg[2])+20+text_width((char*)msg[2]);
+      if(img_buttons[2])
+        SDL_BlitSurface(img_buttons[2],NULL,screen,&dest);
+      dest.x+=10;
+      if(img_buttons[3])
+        SDL_BlitSurface(img_buttons[3],NULL,screen,&dest);
+      draw_text(screen,font,(char*)msg[4],dest.x+10,230,255,255,255);
+    }
   }
 }
 
@@ -1113,8 +1138,10 @@ void draw_mode_clock()
 ///////////////////////////////////
 void update_mode_clock()
 {
+
   if(!edit_mode)
   {
+    // actions in normal mode
     if(mainjoystick.button_select)
     {
       edit_mode=TRUE;
@@ -1128,6 +1155,7 @@ void update_mode_clock()
   }
   else
   {
+    // actions in edit mode
     if(mainjoystick.button_b)
       edit_mode=FALSE;
     if(mainjoystick.button_a)
@@ -1135,6 +1163,7 @@ void update_mode_clock()
       time_t t=mktime(&edit_time);
       if(t!=(time_t)-1)
         stime(&t);
+      actual_calendar=edit_time;
       edit_mode=FALSE;
     }
     if(mainjoystick.pad_right)
@@ -1149,6 +1178,141 @@ void update_mode_clock()
       if(editclock_index<0)
         editclock_index=6;
     }
+    if(mainjoystick.pad_down)
+    {
+      switch(editclock_index)
+      {
+        case 0:
+          edit_time.tm_hour-=1;
+          mktime(&edit_time);
+          break;
+        case 1:
+          edit_time.tm_min-=1;
+          mktime(&edit_time);
+          break;
+        case 2:
+          edit_time.tm_sec-=1;
+          mktime(&edit_time);
+          break;
+        case 3:
+          clock_settings.format_24=!clock_settings.format_24;
+          mktime(&edit_time);
+          break;
+        case 4:
+          if(clock_settings.date_ord1==0)
+            edit_time.tm_mday-=1;
+          if(clock_settings.date_ord1==1)
+            edit_time.tm_mon-=1;
+          if(clock_settings.date_ord1==2)
+            edit_time.tm_year-=1;
+          mktime(&edit_time);
+          break;
+        case 5:
+          if(clock_settings.date_ord2==0)
+            edit_time.tm_mday-=1;
+          if(clock_settings.date_ord2==1)
+            edit_time.tm_mon-=1;
+          if(clock_settings.date_ord2==2)
+            edit_time.tm_year-=1;
+          mktime(&edit_time);
+          break;
+        case 6:
+          if(clock_settings.date_ord3==0)
+            edit_time.tm_mday-=1;
+          if(clock_settings.date_ord3==1)
+            edit_time.tm_mon-=1;
+          if(clock_settings.date_ord3==2)
+            edit_time.tm_year-=1;
+          mktime(&edit_time);
+          break;
+      }
+    }
+    if(mainjoystick.pad_up)
+    {
+      switch(editclock_index)
+      {
+        case 0:
+          edit_time.tm_hour+=1;
+          mktime(&edit_time);
+          break;
+        case 1:
+          edit_time.tm_min+=1;
+          mktime(&edit_time);
+          break;
+        case 2:
+          edit_time.tm_sec+=1;
+          mktime(&edit_time);
+          break;
+        case 3:
+          clock_settings.format_24=!clock_settings.format_24;
+          mktime(&edit_time);
+          break;
+        case 4:
+          if(clock_settings.date_ord1==0)
+            edit_time.tm_mday+=1;
+          if(clock_settings.date_ord1==1)
+            edit_time.tm_mon+=1;
+          if(clock_settings.date_ord1==2)
+            edit_time.tm_year+=1;
+          mktime(&edit_time);
+          break;
+        case 5:
+          if(clock_settings.date_ord2==0)
+            edit_time.tm_mday+=1;
+          if(clock_settings.date_ord2==1)
+            edit_time.tm_mon+=1;
+          if(clock_settings.date_ord2==2)
+            edit_time.tm_year+=1;
+          mktime(&edit_time);
+          break;
+        case 6:
+          if(clock_settings.date_ord3==0)
+            edit_time.tm_mday+=1;
+          if(clock_settings.date_ord3==1)
+            edit_time.tm_mon+=1;
+          if(clock_settings.date_ord3==2)
+            edit_time.tm_year+=1;
+          mktime(&edit_time);
+          break;
+      }
+    }
+    int tmp;
+    if(mainjoystick.button_l2)
+    {
+      switch(editclock_index)
+      {
+        case 5:
+          tmp=clock_settings.date_ord1;
+          clock_settings.date_ord1=clock_settings.date_ord2;
+          clock_settings.date_ord2=tmp;
+          editclock_index=4;
+          break;
+        case 6:
+          tmp=clock_settings.date_ord2;
+          clock_settings.date_ord2=clock_settings.date_ord3;
+          clock_settings.date_ord3=tmp;
+          editclock_index=5;
+          break;
+      }
+    }
+    if(mainjoystick.button_r2)
+    {
+      switch(editclock_index)
+      {
+        case 4:
+          tmp=clock_settings.date_ord1;
+          clock_settings.date_ord1=clock_settings.date_ord2;
+          clock_settings.date_ord2=tmp;
+          editclock_index=5;
+          break;
+        case 5:
+          tmp=clock_settings.date_ord2;
+          clock_settings.date_ord2=clock_settings.date_ord3;
+          clock_settings.date_ord3=tmp;
+          editclock_index=6;
+          break;
+      }
+    }
   }
 }
 
@@ -1157,20 +1321,92 @@ void update_mode_clock()
 ///////////////////////////////////
 void draw_mode_cal()
 {
-  char xx[2];
-  int x=0,y=0;
-  for(int f=32; f<255;f++)
+  tm tmptime;
+  tmptime=actual_calendar;
+  tmptime.tm_mday=1;
+  mktime(&tmptime);
+
+  if(clock_settings.mon_first && tmptime.tm_wday!=1)
   {
-    xx[0]=f;
-    xx[1]=0;
-    draw_text(screen,font,xx,x,y,255,255,0);
-    x+=10;
-    if(x>200)
+    int d=tmptime.tm_wday;
+    if(d==0)
+      d=6;
+    else
+      d--;
+    tmptime.tm_mday-=d;   // begin from first day of the week (monday begin)
+    mktime(&tmptime);
+  }
+  else if(!clock_settings.mon_first && tmptime.tm_wday!=0)
+  {
+    tmptime.tm_mday-=tmptime.tm_wday; // begin from first day of the week (sunday begins)
+    mktime(&tmptime);
+  }
+
+  // cells 32x24
+  SDL_Color col,bor;
+  col.r=178;
+  col.g=188;
+  col.b=194;
+  bor.r=55;
+  bor.g=37;
+  bor.b=56;
+
+  /*SDL_Rect dest;
+  dest.x=48;
+  dest.y=48;*/
+  draw_rectangle(48,24,224,168,&col,BORDER_SINGLE,&bor);
+
+  int inmonth;
+  if(tmptime.tm_mday==1)
+    inmonth=1;
+  else
+    inmonth=0;
+  int x=48, y=24, tday=0;
+  while(inmonth!=2 || (inmonth==2 && x!=48))
+  {
+    SDL_Color ccc;
+    ccc.r=64;
+    ccc.g=64;
+    ccc.b=64;
+    if(tmptime.tm_mday%2==0)
+      draw_rectangle(x,y,32,24,&ccc);
+
+    char num[20];
+    sprintf(num,"%d",tmptime.tm_mday);
+    int tx=x+16-text_width(num);
+    int ty=y+5;
+
+    if(inmonth==1)
     {
-      x=0;
-      y+=10;
+      if(tmptime.tm_wday==0)
+        draw_text(screen,font3,num,tx,ty,225,65,65);
+      else
+        draw_text(screen,font3,num,tx,ty,23,17,26);
+    }
+    else
+      draw_text(screen,font3,num,tx,ty,120,132,171);
+
+    tmptime.tm_mday++;
+    mktime(&tmptime);
+    if(tmptime.tm_mon==actual_calendar.tm_mon && inmonth==0)
+      inmonth=1;
+    if(tmptime.tm_mon!=actual_calendar.tm_mon && inmonth==1)
+      inmonth=2;
+
+    x+=32;
+    if(x>30+(32*7))
+    {
+      x=48;
+      y+=24;
     }
   }
+
+  // name
+  char monthtext[20];
+  strftime(monthtext,20,"%B %Y",&actual_calendar);
+  uppertext(monthtext);
+  draw_text(screen,font,monthtext,160-text_width(monthtext)/2,14,255,255,0);
+
 }
 
 ///////////////////////////////////

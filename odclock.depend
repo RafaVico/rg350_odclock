@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1577449013 source:/home/rafa/GitHub___/odclock/src/main.cpp
+1577480104 source:/home/rafa/GitHub___/odclock/src/main.cpp
 	<sys/stat.h>
 	<math.h>
 	<time.h>
@@ -13,6 +13,7 @@
 	"../inc/font_atomicclockradio.h"
 	"../inc/bmp_icons.h"
 	"../inc/bmp_arrows.h"
+	"../inc/bmp_buttons.h"
 
 1577230168 /home/rafa/GitHub___/odclock/inc/font_pixelberry.h
 
@@ -20,5 +21,7 @@
 
 1577303104 /home/rafa/GitHub___/odclock/inc/bmp_icons.h
 
-1577449343 /home/rafa/GitHub___/odclock/inc/bmp_arrows.h
+1577480377 /home/rafa/GitHub___/odclock/inc/bmp_arrows.h
+
+1577480323 /home/rafa/GitHub___/odclock/inc/bmp_buttons.h
 

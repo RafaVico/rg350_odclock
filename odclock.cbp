@@ -38,6 +38,7 @@
 		<Unit filename="inc/bmp_buttons.h" />
 		<Unit filename="inc/bmp_icons.h" />
 		<Unit filename="inc/font_atomicclockradio.h" />
+		<Unit filename="inc/font_audiowide.h" />
 		<Unit filename="inc/font_pixelberry.h" />
 		<Unit filename="src/main.cpp" />
 		<Extensions>
