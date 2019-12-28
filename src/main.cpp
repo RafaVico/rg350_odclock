@@ -156,7 +156,7 @@ Mix_Chunk *sound_tone;
 ///////////////////////////////////
 /*  Messages                     */
 ///////////////////////////////////
-const char* msg[8]=
+const char* msg[9]=
 {
   " exit",
   " set time",
@@ -165,7 +165,8 @@ const char* msg[8]=
   " move",
   " month",
   " year",
-  " begin"
+  " begin",
+  " set alarm"
 };
 
 const char* daysname[7]=
@@ -469,6 +470,42 @@ void draw_actualtime(int x, int y)
   draw_text(screen,font,sectext,x+120,y+40,128,128,0);
 }
 
+void draw_alarmtime(int x, int y)
+{
+  time_t now=time(0);
+  tm* timeinfo;
+  timeinfo=localtime(&now);
+  actual_time=*timeinfo;
+
+  // time
+  char timetext[20];
+  if(clock_settings.format_24)
+  {
+    strftime(timetext,20,"%H:%M",timeinfo);
+    draw_text(screen,font2,timetext,x+17,y+40,255,255,0);
+  }
+  else
+  {
+    strftime(timetext,20,"%I:%M",timeinfo);
+    draw_text(screen,font2,timetext,x+17,y+40,255,255,0);
+  }
+
+  // AM/PM
+  char amtext[20];
+  if(!clock_settings.format_24)
+  {
+    strftime(amtext,20,"%p",timeinfo);
+    draw_text(screen,font,amtext,x+120,y+56,128,128,0);
+  }
+  else
+    draw_text(screen,font,(char*)"24h",x+120,y+56,30,30,30);
+
+  // seconds
+  char sectext[20];
+  strftime(sectext,20,":%S",timeinfo);
+  draw_text(screen,font,sectext,x+120,y+40,128,128,0);
+}
+
 void set_clockeditarrows(int x, int y)
 {
   // fixed positions of edit arrows
@@ -670,6 +707,46 @@ void draw_clock(int x, int y)
   color.r=225;
   color.g=65;
   color.b=65;
+  draw_rectangle(x+60,y+2,30,10,&color,BORDER_ROUNDED,&color);
+}
+
+///////////////////////////////////
+/*  Draw a clock at position x,y */
+///////////////////////////////////
+void draw_alarm(int x, int y)
+{
+// 100,80
+  SDL_Color color;
+
+  // up
+  color.r=225;
+  color.g=65;
+  color.b=65;
+  draw_rectangle(x,y,150,22,&color,BORDER_ROUNDED,&color);
+  // front
+  color.r=122;
+  color.g=33;
+  color.b=58;
+  draw_rectangle(x,y+20,150,90,&color,BORDER_SINGLE,&color);
+  // inner
+  color.r=23;
+  color.g=17;
+  color.b=26;
+  draw_rectangle(x+10,y+30,130,70,&color);
+  // inner shadows
+  color.r=55;
+  color.g=37;
+  color.b=56;
+  draw_rectangle(x+10,y+30,2,70,&color);
+  draw_rectangle(x+10,y+30,130,2,&color);
+  //button
+  color.r=164;
+  color.g=164;
+  color.b=164;
+  draw_rectangle(x+60,y+5,30,10,&color,BORDER_ROUNDED,&color);
+  color.r=255;
+  color.g=255;
+  color.b=255;
   draw_rectangle(x+60,y+2,30,10,&color,BORDER_ROUNDED,&color);
 }
 
@@ -1401,11 +1478,12 @@ void draw_mode_cal()
   // print days
   while(inmonth!=2 || (inmonth==2 && x!=48))
   {
-    /*SDL_Color ccc;
-    ccc.r=64;
-    ccc.g=64;
-    ccc.b=64;*/
     draw_rectangle(x,y,32,28,&col);
+    SDL_Color ccc;
+    ccc.r=col.r-5;
+    ccc.g=col.g-5;
+    ccc.b=col.b-5;
+    draw_rectangle(x+31,y,1,28,&ccc);
 
     char num[20];
     sprintf(num,"%d",tmptime.tm_mday);
@@ -1424,6 +1502,7 @@ void draw_mode_cal()
 
     tmptime.tm_mday++;
     mktime(&tmptime);
+
     if(tmptime.tm_mon==actual_calendar.tm_mon && inmonth==0)
       inmonth=1;
     if(tmptime.tm_mon!=actual_calendar.tm_mon && inmonth==1)
@@ -1441,12 +1520,12 @@ void draw_mode_cal()
   char monthtext[20];
   strftime(monthtext,20,"%B %Y",&actual_calendar);
   uppertext(monthtext);
-  draw_text(screen,font,monthtext,160-text_width(monthtext)/2,14,255,255,0);
+  draw_text(screen,font,monthtext,160-text_width(monthtext)/2,14,255,255,255);
 
   // buttons
   SDL_Rect dest;
   dest.y=230;
-  dest.x=105;//+text_width((char*)msg[2])+20+text_width((char*)msg[2]);
+  dest.x=85;//+text_width((char*)msg[2])+20+text_width((char*)msg[2]);
   if(img_buttons[10])
     SDL_BlitSurface(img_buttons[10],NULL,screen,&dest);
   dest.x+=10;
@@ -1514,6 +1593,19 @@ void update_mode_cal()
 ///////////////////////////////////
 void draw_mode_alarm()
 {
+  SDL_Rect dest;
+
+  draw_alarm(85,50);
+  draw_alarmtime(85,50);
+
+  if(!edit_mode)
+  {
+    dest.x=85;
+    dest.y=230;
+    if(img_buttons[4])
+      SDL_BlitSurface(img_buttons[4],NULL,screen,&dest);
+    draw_text(screen,font,(char*)msg[8],95,230,255,255,255);
+  }
 }
 
 ///////////////////////////////////
