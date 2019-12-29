@@ -1298,7 +1298,10 @@ void update_mode_clock()
           if(clock_settings.date_ord1==1)
             edit_time.tm_mon-=1;
           if(clock_settings.date_ord1==2)
-            edit_time.tm_year-=1;
+          {
+            if(edit_time.tm_year>0)
+              edit_time.tm_year-=1;
+          }
           mktime(&edit_time);
           break;
         case 5:
@@ -1307,7 +1310,10 @@ void update_mode_clock()
           if(clock_settings.date_ord2==1)
             edit_time.tm_mon-=1;
           if(clock_settings.date_ord2==2)
-            edit_time.tm_year-=1;
+          {
+            if(edit_time.tm_year>0)
+              edit_time.tm_year-=1;
+          }
           mktime(&edit_time);
           break;
         case 6:
@@ -1316,7 +1322,10 @@ void update_mode_clock()
           if(clock_settings.date_ord3==1)
             edit_time.tm_mon-=1;
           if(clock_settings.date_ord3==2)
-            edit_time.tm_year-=1;
+          {
+            if(edit_time.tm_year>0)
+              edit_time.tm_year-=1;
+          }
           mktime(&edit_time);
           break;
       }
@@ -1347,7 +1356,10 @@ void update_mode_clock()
           if(clock_settings.date_ord1==1)
             edit_time.tm_mon+=1;
           if(clock_settings.date_ord1==2)
-            edit_time.tm_year+=1;
+          {
+            if(edit_time.tm_year<(2037-1900))
+              edit_time.tm_year+=1;
+          }
           mktime(&edit_time);
           break;
         case 5:
@@ -1356,7 +1368,10 @@ void update_mode_clock()
           if(clock_settings.date_ord2==1)
             edit_time.tm_mon+=1;
           if(clock_settings.date_ord2==2)
-            edit_time.tm_year+=1;
+          {
+            if(edit_time.tm_year<(2037-1900))
+              edit_time.tm_year+=1;
+          }
           mktime(&edit_time);
           break;
         case 6:
@@ -1365,7 +1380,10 @@ void update_mode_clock()
           if(clock_settings.date_ord3==1)
             edit_time.tm_mon+=1;
           if(clock_settings.date_ord3==2)
-            edit_time.tm_year+=1;
+          {
+            if(edit_time.tm_year<(2037-1900))
+              edit_time.tm_year+=1;
+          }
           mktime(&edit_time);
           break;
       }
