@@ -131,6 +131,7 @@ TTF_Font* font3;                // used font
 SDL_Joystick* joystick;         // used joystick
 joystick_state mainjoystick;
 Uint8* keys=SDL_GetKeyState(NULL);
+#define MAX_SECTIONS  2   // there are 4 sections: clock, calendar, alarm, timer
 
 // clock info
 tm actual_time;
@@ -1648,7 +1649,7 @@ void update_menu()
   {
     edit_mode=FALSE;
     mode_app++;
-    if(mode_app>MODE_TIMER)
+    if(mode_app>MAX_SECTIONS)
       mode_app=MODE_CLOCK;
   }
   if(mainjoystick.button_l1)
@@ -1656,7 +1657,7 @@ void update_menu()
     edit_mode=FALSE;
     mode_app--;
     if(mode_app<MODE_CLOCK)
-      mode_app=MODE_TIMER;
+      mode_app=MAX_SECTIONS;
   }
 }
 
@@ -1674,12 +1675,9 @@ void draw_menu()
   dest.y=230;
   if(img_buttons[0])
     SDL_BlitSurface(img_buttons[0],NULL,screen,&dest);
-  dest.x=60;
-  if(img_buttons[1])
-    SDL_BlitSurface(img_buttons[1],NULL,screen,&dest);
 
-  dest.x=15;
-  for(int f=0; f<4; f++)
+  dest.x+=15;
+  for(int f=0; f<MAX_SECTIONS; f++)
   {
     if(f==(mode_app-1))
       SDL_BlitSurface(img_icons[f+2],NULL,screen,&dest);
@@ -1687,6 +1685,10 @@ void draw_menu()
       SDL_BlitSurface(img_icons[f+6],NULL,screen,&dest);
     dest.x+=10;
   }
+
+  dest.x+=5;
+  if(img_buttons[1])
+    SDL_BlitSurface(img_buttons[1],NULL,screen,&dest);
 
   // menu message
   dest.x=310-text_width((char*)msg[0]);
