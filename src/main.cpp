@@ -883,7 +883,7 @@ void init_game()
   SDL_FreeSurface(tmpsurface);
 
   // Load sounds
-  sound_tone=Mix_LoadWAV("media/tone.wav");
+  //sound_tone=Mix_LoadWAV("media/tone.wav");
 }
 
 ///////////////////////////////////
