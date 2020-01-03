@@ -8,7 +8,7 @@ echo ${OPK_NAME}
 cat > default.gcw0.desktop <<EOF
 [Desktop Entry]
 Name=Clock OpenDingux
-Comment=Clock, calendar, alarm, timer
+Comment=Clock, calendar
 Exec=clockod
 Terminal=false
 Type=Application

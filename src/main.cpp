@@ -1294,38 +1294,38 @@ void update_mode_clock()
           break;
         case 4:
           if(clock_settings.date_ord1==0)
-            edit_time.tm_mday-=1;
+            if(!(edit_time.tm_year==0 && edit_time.tm_mon==0 && edit_time.tm_mday==1))
+              edit_time.tm_mday-=1;
           if(clock_settings.date_ord1==1)
-            edit_time.tm_mon-=1;
+            if(!(edit_time.tm_year==0 && edit_time.tm_mon==0))
+              edit_time.tm_mon-=1;
           if(clock_settings.date_ord1==2)
-          {
             if(edit_time.tm_year>0)
               edit_time.tm_year-=1;
-          }
           mktime(&edit_time);
           break;
         case 5:
           if(clock_settings.date_ord2==0)
-            edit_time.tm_mday-=1;
+            if(!(edit_time.tm_year==0 && edit_time.tm_mon==0 && edit_time.tm_mday==1))
+              edit_time.tm_mday-=1;
           if(clock_settings.date_ord2==1)
-            edit_time.tm_mon-=1;
+            if(!(edit_time.tm_year==0 && edit_time.tm_mon==0))
+              edit_time.tm_mon-=1;
           if(clock_settings.date_ord2==2)
-          {
             if(edit_time.tm_year>0)
               edit_time.tm_year-=1;
-          }
           mktime(&edit_time);
           break;
         case 6:
           if(clock_settings.date_ord3==0)
-            edit_time.tm_mday-=1;
+            if(!(edit_time.tm_year==0 && edit_time.tm_mon==0 && edit_time.tm_mday==1))
+              edit_time.tm_mday-=1;
           if(clock_settings.date_ord3==1)
-            edit_time.tm_mon-=1;
+            if(!(edit_time.tm_year==0 && edit_time.tm_mon==0))
+              edit_time.tm_mon-=1;
           if(clock_settings.date_ord3==2)
-          {
             if(edit_time.tm_year>0)
               edit_time.tm_year-=1;
-          }
           mktime(&edit_time);
           break;
       }
@@ -1352,38 +1352,38 @@ void update_mode_clock()
           break;
         case 4:
           if(clock_settings.date_ord1==0)
-            edit_time.tm_mday+=1;
+            if(!(edit_time.tm_year==(2037-1900) && edit_time.tm_mon==11 && edit_time.tm_mday==31))
+              edit_time.tm_mday+=1;
           if(clock_settings.date_ord1==1)
-            edit_time.tm_mon+=1;
+            if(!(edit_time.tm_year==(2037-1900) && edit_time.tm_mon==11))
+              edit_time.tm_mon+=1;
           if(clock_settings.date_ord1==2)
-          {
             if(edit_time.tm_year<(2037-1900))
               edit_time.tm_year+=1;
-          }
           mktime(&edit_time);
           break;
         case 5:
           if(clock_settings.date_ord2==0)
-            edit_time.tm_mday+=1;
+            if(!(edit_time.tm_year==(2037-1900) && edit_time.tm_mon==11 && edit_time.tm_mday==31))
+              edit_time.tm_mday+=1;
           if(clock_settings.date_ord2==1)
-            edit_time.tm_mon+=1;
+            if(!(edit_time.tm_year==(2037-1900) && edit_time.tm_mon==11))
+              edit_time.tm_mon+=1;
           if(clock_settings.date_ord2==2)
-          {
             if(edit_time.tm_year<(2037-1900))
               edit_time.tm_year+=1;
-          }
           mktime(&edit_time);
           break;
         case 6:
           if(clock_settings.date_ord3==0)
-            edit_time.tm_mday+=1;
+            if(!(edit_time.tm_year==(2038-1900) && edit_time.tm_mon==11 && edit_time.tm_mday==31))
+              edit_time.tm_mday+=1;
           if(clock_settings.date_ord3==1)
-            edit_time.tm_mon+=1;
+            if(!(edit_time.tm_year==(2037-1900) && edit_time.tm_mon==11))
+              edit_time.tm_mon+=1;
           if(clock_settings.date_ord3==2)
-          {
             if(edit_time.tm_year<(2037-1900))
               edit_time.tm_year+=1;
-          }
           mktime(&edit_time);
           break;
       }
