@@ -1257,6 +1257,7 @@ void update_mode_clock()
       time_t t=mktime(&edit_time);
       if(t!=(time_t)-1)
         stime(&t);
+      system("hwclock --systohc");
       actual_calendar=edit_time;
       edit_mode=FALSE;
     }
@@ -1514,7 +1515,9 @@ void draw_mode_cal()
 
     if(inmonth==1)
     {
-      if(tmptime.tm_wday==0)
+      if(tmptime.tm_year==actual_time.tm_year && tmptime.tm_mon==actual_time.tm_mon && tmptime.tm_mday==actual_time.tm_mday)
+        draw_text(screen,font3,num,tx,ty,65,171,65);
+      else if(tmptime.tm_wday==0)
         draw_text(screen,font3,num,tx,ty,225,65,65);
       else
         draw_text(screen,font3,num,tx,ty,23,17,26);
