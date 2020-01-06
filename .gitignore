@@ -1,4 +1,3 @@
-.obj/
-screenshots/
-*.o
+.obj/*
+screenshots/*
 

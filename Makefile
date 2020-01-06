@@ -1,9 +1,7 @@
-ifeq ($(PLATFORM), gcw0)
-  CC         := /opt/gcw0-toolchain/usr/bin/mipsel-linux-g++
-  STRIP      := /opt/gcw0-toolchain/usr/bin/mipsel-linux-strip
-  LIBS       := -L/opt/gcw0-toolchain/usr/mipsel-gcw0-linux-uclibc/sysroot/usr/lib
-  INCS	     := -I/opt/gcw0-toolchain/usr/mipsel-gcw0-linux-uclibc/sysroot/usr/include -I inc
-endif
+CC         := /opt/gcw0-toolchain/usr/bin/mipsel-linux-g++
+STRIP      := /opt/gcw0-toolchain/usr/bin/mipsel-linux-strip
+LIBS       := -L/opt/gcw0-toolchain/usr/mipsel-gcw0-linux-uclibc/sysroot/usr/lib
+INCS	     := -I/opt/gcw0-toolchain/usr/mipsel-gcw0-linux-uclibc/sysroot/usr/include -I inc
 
 CC           ?= g++
 STRIP        ?= strip
