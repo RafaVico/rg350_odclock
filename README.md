@@ -11,3 +11,7 @@ GPL v.2
 Rafa Vico 2019
 http://github.com/rafavico
 
+# Screenshots
+
+<img src="screenshots/screenshot003.png" title="image">
+<img src="screenshots/screenshot005.png" title="image">
