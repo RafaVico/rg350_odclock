@@ -1839,12 +1839,12 @@ void draw_menu()
   // lang message
   dest.x=310-text_width((char*)msg[lang][0])-25;
   dest.y=230;
+  SDL_BlitSurface(img_buttons[8],NULL,screen,&dest);
+  dest.x+=10;
   if(lang)
     SDL_BlitSurface(img_icons[10],NULL,screen,&dest);
   else
     SDL_BlitSurface(img_icons[11],NULL,screen,&dest);
-  dest.x+=10;
-  SDL_BlitSurface(img_buttons[8],NULL,screen,&dest);
 
   // menu message
   dest.x=310-text_width((char*)msg[lang][0]);
