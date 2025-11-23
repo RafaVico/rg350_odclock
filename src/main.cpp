@@ -20,6 +20,10 @@
 #include <SDL/SDL_image.h>
 #include <SDL/SDL_ttf.h>
 #include <SDL/SDL_mixer.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <limits.h>
+#include <libgen.h>
 
 #include "../inc/font_pixelberry.h"       // font are embedded in executable
 #include "../inc/font_atomicclockradio.h"
@@ -258,12 +262,24 @@ void process_joystick();
 void Logger( std::string logMsg )
 {
 
-    std::string filePath = "/usr/local/home/log_"+getCurrentDateTime("date")+".txt";
+    std::string filePath = "/mnt/SDCARD/log_"+getCurrentDateTime("date")+".txt";
     std::string now = getCurrentDateTime("now");
     std::ofstream ofs(filePath.c_str(), std::ios_base::out | std::ios_base::app );
     ofs << now << '\t' << logMsg << '\n';
     ofs.close();
 }*/
+
+void get_exe_dir(char *path)
+{
+    char exe_path[500];
+    ssize_t len = readlink("/proc/self/exe", exe_path, sizeof(exe_path) - 1);
+    dirname(exe_path);
+    if (len != -1) {
+        len=strlen(exe_path);
+        exe_path[len] = '\0';
+        strcpy(path,exe_path);
+    }
+}
 
 ///////////////////////////////////
 /*  Replace string               */
@@ -301,7 +317,10 @@ void load_config()
 {
   FILE* config_file;
 #ifdef PLATFORM_MIYOO
-  config_file=fopen("/mnt/SDCARD/.odclock/settings.ini","r");
+  char path[500];
+  get_exe_dir((char*)&path);
+  strcat(path,"/.config/settings.ini");
+  config_file=fopen(path,"r");
 #else
   config_file=fopen("/usr/local/home/.odclock/settings.ini","r");
 #endif
@@ -337,14 +356,18 @@ void load_config()
 void save_config()
 {
 #ifdef PLATFORM_MIYOO
-  mkdir("/mnt/SDCARD/.odclock",0);
+  char path[500];
+  get_exe_dir((char*)&path);
+  strcat(path,"/.config");
+  mkdir(path,0);
 #else
   mkdir("/usr/local/home/.odclock",0);
 #endif
 
 FILE* config_file;
 #ifdef PLATFORM_MIYOO
-  config_file=fopen("/mnt/SDCARD/.odclock/settings.ini","wb");
+  strcat(path,"/settings.ini");
+  config_file=fopen(path,"wb");
 #else
   config_file=fopen("/usr/local/home/.odclock/settings.ini","wb");
 #endif
